@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>MAIS Hacks</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins">
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/static/style.css">
+
+</head>
+
+<body>
+
+    <br>
+
+    <div class="content">
+    <h2>Upload Image:</h2>
+    
+    <form method=post enctype=multipart/form-data>
+        <input type=file name=file onchange="previewImage(event)">
+        <input type=submit value=UPLOAD style="padding:10px; font-family: Poppins; background-color: white;">
+    </form>
+
+    <br>
+
+    <div>
+        <img style="height:100%;width:100%;display:none" id="your-image" />
+    </div>
+
+    </div>
+
+    <!-- To preview image before submitting. -->
+    <script  src="{{url_for('static', filename='script.js')}}">
+    </script>
+
+</body>
+
+</html>

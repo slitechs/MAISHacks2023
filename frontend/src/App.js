@@ -1,6 +1,17 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, Component} from 'react';
+import './App.css';
+import { Button } from '@mui/material';
 
 function App() {
+
+  const [file, setFile] = useState();
+  const [fileUrl, setFileUrl] = useState(null);
+
+  function processImage(e) {
+    const imageFile = e.target.files[0];
+    const imageUrl = URL.createObjectURL(imageFile); //generates a temporary url for the selected file
+    setFileUrl(imageUrl)
+  }
 
   const [data,setData] = useState({
     name: "",
@@ -27,15 +38,29 @@ function App() {
 
   return (
     <div className="App">
-      <div className="App-header">
+      {/*
+        <div className="example">
                 <h1>Data</h1>
-                {/* Calling a data from setdata for showing */}
                 <p>{data.name}</p>
                 <p>{data.age}</p>
                 <p>{data.date}</p>
                 <p>{data.programming}</p>
  
       </div>
+      */}
+    <div className="App-header">
+      <h1>ProjectName</h1>
+      <p>Subheading.</p>
+      <Button variant="outlined">
+      <label>
+        Upload an Image
+        <input type="file" accept="image/*" onChange={processImage} />
+      </label>
+      </Button>
+      <Button>Save</Button>
+      <img class="image-preview" src={fileUrl}/>
+    </div>
+      
     </div>
   );
 }
