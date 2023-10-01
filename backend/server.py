@@ -6,6 +6,8 @@ import datetime
 
 import os
 from werkzeug.utils import secure_filename
+
+import clothing_data
  
 x = datetime.datetime.now()
  
@@ -42,6 +44,7 @@ def upload_file():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        # add option for model to identify type of clothing (shirt, pant) and put it in the respective folder (shirts, pants)
     else:
         return "File type not supported."
 
@@ -84,6 +87,64 @@ def get_images():
 
     return send_file(zip_filename, as_attachment=True)
             
+@app.route('/gallery', methods=['GET'])
+def get_all_images():
+    stored_images = os.listdir('./photos')
+    image_paths = []
+
+    for url in stored_images:
+        image_paths.append(url)
+
+    # create a zip file
+    zip_filename = "./zip_files/images.zip"
+    
+    with ZipFile(zip_filename, 'w') as zip_file:
+        for image_path in image_paths:
+            zip_file.write('./photos/'+image_path, os.path.basename(image_path))
+
+    return send_file(zip_filename, as_attachment=True)
+
+@app.route('/model', methods=['GET'])
+def generate_outfit():
+    # Get the style requested by the user
+    outfit_style = request.args.get('outfit')
+
+    shirt_path = ""
+    pant_path = ""
+
+    # Todo: Find what style clothes match it (using labels from AI model)
+    for shirt,style in clothing_data.shirts.items():
+        if style == outfit_style:
+            shirt_path = shirt
+
+    print("found shirt")
+
+    for pant,style in clothing_data.pants.items():
+        if style == outfit_style:
+            pant_path = pant
+        
+    print("found pants")
+
+    # Then, send them in a zip file
+    stored_shirts = os.listdir('./shirts')
+    stored_pants = os.listdir('./pants')
+
+    image_paths = []
+
+    if shirt_path in stored_shirts:
+        image_paths.append(shirt_path)
+
+    if pant_path in stored_pants:
+        image_paths.append(pant_path)
+
+    # create a zip file
+    zip_filename = "./zip_files/images.zip"
+    
+    with ZipFile(zip_filename, 'w') as zip_file:
+        for image_path in image_paths:
+            zip_file.write('./photos/'+image_path, os.path.basename(image_path)) # Uploading an image saves it to the photos directory, so can get shirt and pants from there directly for now. In the future, change this to get path from pants and shirts directory separately (and don't have the photos directory or only have it for temporary storage, don't want to store each image twice)
+
+    return send_file(zip_filename, as_attachment=True)
 
 # Route for seeing a data (test)
 @app.route('/data')

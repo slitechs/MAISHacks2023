@@ -10,12 +10,18 @@ function App() {
   const [fileUrl, setFileUrl] = useState(null);
   const [file2Url, setFile2Url] = useState(null);
   const [uploadSuccessful, setUploadSuccessful] = useState();
+
+  const [galleryUrl1, setGalleryUrl1] = useState(null);
+  const [galleryUrl2, setGalleryUrl2] = useState(null);
+  const [galleryUrl3, setGalleryUrl3] = useState(null);
+  const [galleryUrl4, setGalleryUrl4] = useState(null);
   
   function processImage(e) {
     const imageFile = e.target.files[0];
     setFile(imageFile)
     const imageUrl = URL.createObjectURL(imageFile); //generates a temporary url for the selected file
     setFileUrl(imageUrl)
+    setUploadSuccessful(false) // Get rid of the "saved!" message
   }
 
   async function handleSave(e) {
@@ -56,6 +62,7 @@ function App() {
     setFileUrl(imageUrl)
   }
 
+  // Get an image when you know its path
   async function getImages() {
     // This should get one type of outfit (once linked to AI)
     var shirt = "black_tshirt.jpeg"
@@ -104,6 +111,7 @@ function App() {
  
   }
 
+  // Get multiple images when you know their paths
   async function getImagesFormal() {
     // This should get a formal outfit (once linked to AI)
     var shirt = "blazer_small.jpeg"
@@ -152,6 +160,164 @@ function App() {
 
   }
 
+  // The actual function to be used to generate the outfit (casual)
+  async function generateOutfitCasual() {
+
+    var queryString = "casual"
+
+    // GET request
+    var response = await fetch(
+      "http://127.0.0.1:5000/model?outfit="+queryString
+    )
+
+    if (response.status == 200) {
+      console.log("Get worked")
+    }
+
+    var res = await response.blob() // response needs to be a blob
+
+    // unzip file using JSZip
+    var JSZip = require("jszip");
+
+    const zip = new JSZip();
+    const zipContent = await zip.loadAsync(res); // Load zip file
+    
+    // Extract files (all files are images so no need to filter)
+    const imageFiles = Object.values(zipContent.files);
+    // With filtering (untested):
+    //const imageFiles = Object.values(zipContent.files).filter((file) =>
+    //file.dir ? false : /\.(jpg|jpeg|png|gif)$/i.test(file.name)
+    //);
+
+    // Blob each one to be able to createObjectURL and then display it
+    var i = 0;
+    for (var image of imageFiles) {
+      const blob = await image.async('blob');
+      const imageUrl = URL.createObjectURL(blob);
+      if (i==0) {
+        setFileUrl(imageUrl)
+      } else {
+        setFile2Url(imageUrl)
+      }
+      
+      i = 1
+    }
+
+    console.log(imageFiles)
+
+    // Make sure there are no other photos showing
+    setGalleryUrl1(null)
+    setGalleryUrl2(null)
+    setGalleryUrl3(null)
+    setGalleryUrl4(null)
+
+    setUploadSuccessful(false)
+
+  }
+
+  // The actual function to be used to generate the outfit (formal)
+  async function generateOutfitFormal() {
+
+    var queryString = "formal"
+
+    // GET request
+    var response = await fetch(
+      "http://127.0.0.1:5000/model?outfit="+queryString
+    )
+
+    if (response.status == 200) {
+      console.log("Get worked")
+    }
+
+    var res = await response.blob() // response needs to be a blob
+
+    // unzip file using JSZip
+    var JSZip = require("jszip");
+
+    const zip = new JSZip();
+    const zipContent = await zip.loadAsync(res); // Load zip file
+    
+    // Extract files (all files are images so no need to filter)
+    const imageFiles = Object.values(zipContent.files);
+    // With filtering (untested):
+    //const imageFiles = Object.values(zipContent.files).filter((file) =>
+    //file.dir ? false : /\.(jpg|jpeg|png|gif)$/i.test(file.name)
+    //);
+
+    // Blob each one to be able to createObjectURL and then display it
+    var i = 0;
+    for (var image of imageFiles) {
+      const blob = await image.async('blob');
+      const imageUrl = URL.createObjectURL(blob);
+      if (i==0) {
+        setFileUrl(imageUrl)
+      } else {
+        setFile2Url(imageUrl)
+      }
+      
+      i = 1
+    }
+
+    console.log(imageFiles)
+
+    // Make sure there are no other photos showing
+    setGalleryUrl1(null)
+    setGalleryUrl2(null)
+    setGalleryUrl3(null)
+    setGalleryUrl4(null)
+
+    setUploadSuccessful(false)
+
+  }
+
+  // Get all photos
+  async function getAllPhotos() {
+    // GET request
+    var response = await fetch(
+      "http://127.0.0.1:5000/gallery"
+    )
+
+    var res = await response.blob() // response needs to be a blob
+
+    // unzip file using JSZip
+    var JSZip = require("jszip");
+
+    const zip = new JSZip();
+    const zipContent = await zip.loadAsync(res); // Load zip file
+    
+    // Extract files (all files are images so no need to filter)
+    const imageFiles = Object.values(zipContent.files);
+    // With filtering (untested):
+    //const imageFiles = Object.values(zipContent.files).filter((file) =>
+    //file.dir ? false : /\.(jpg|jpeg|png|gif)$/i.test(file.name)
+    //);
+
+    // Blob each one to be able to createObjectURL and then display it
+    var i = 0;
+    for (var image of imageFiles) {
+      const blob = await image.async('blob');
+      const imageUrl = URL.createObjectURL(blob);
+      if (i==0) {
+        setGalleryUrl1(imageUrl)
+      } else if (i == 1) {
+        setGalleryUrl2(imageUrl)
+      } else if (i == 2) {
+        setGalleryUrl3(imageUrl)
+      } else if (i == 3) {
+        setGalleryUrl4(imageUrl)
+      }
+      
+      i = i+1
+    }
+
+    console.log(imageFiles)
+
+    // Make sure there are no other photos showing
+    setFileUrl(null)
+    setFile2Url(null)
+    setUploadSuccessful(false)
+
+  }
 
   // Axios POST (unused)
   const handleSubmit = (e) => {
@@ -207,11 +373,11 @@ function App() {
       <p>Your personal AI stylist.</p>
       <br/>
       <Button className="button-style" variant="outlined" onClick={
-        getImages
+        generateOutfitCasual
       }>Get a casual outfit</Button>
       <br/>
       <Button className="button-style" variant="outlined" onClick={
-        getImagesFormal
+        generateOutfitFormal
       }>Get a formal outfit</Button>
       <br/>
       <Button className="button-style" variant="outlined">
@@ -224,14 +390,24 @@ function App() {
         handleSave
       }>Save Image</Button>
       <div>{uploadSuccessful && <Checkmark/>}</div>
+      <br/>
+      <Button onClick={
+        getAllPhotos
+      } variant="outlined">Photo Gallery</Button>
       <img class="image-preview" src={fileUrl}/>
       <img class="image-preview" src={file2Url}/>
+
+      <img class="image-gallery" src={galleryUrl1}/>
+      <img class="image-gallery" src={galleryUrl2}/>
+      <img class="image-gallery" src={galleryUrl3}/>
+      <img class="image-gallery" src={galleryUrl4}/>
       {/* 
       <Button variant="outlined" onClick={
         getImage
       }>Get one item</Button>
       <br/>
       */}
+
     </div>
       
     </div>
