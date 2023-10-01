@@ -2,11 +2,14 @@ import React, {useState, useEffect, Component} from 'react';
 import './App.css';
 import { Button } from '@mui/material';
 import axios from "axios";
+import Checkmark from './components/checkmark';
 
 function App() {
 
   const [file, setFile] = useState();
   const [fileUrl, setFileUrl] = useState(null);
+  const [file2Url, setFile2Url] = useState(null);
+  const [uploadSuccessful, setUploadSuccessful] = useState();
   
   function processImage(e) {
     const imageFile = e.target.files[0];
@@ -32,21 +35,76 @@ function App() {
 
     if (response.status == 200) {
       console.log("It worked")
+      setFileUrl(null)
+      setUploadSuccessful(true)
     }
   }
 
   async function getImage() {
-    var image_name = "Google_logo.png"
     // GET request
     var response = await fetch(
-      "http://127.0.0.1:5000/image?img="+image_name
+      "http://127.0.0.1:5000/image?img=beige_pants.jpeg" // Can change the img= to whatever image is stored in the photos folder (backend)
     )
 
     if (response.status == 200) {
       console.log("Get worked")
     }
 
-    console.log(response)
+    var res = await response.blob() // response needs to be a blob
+    const imageUrl = URL.createObjectURL(res); //generates a temporary url for the selected file
+    console.log(imageUrl)
+    setFileUrl(imageUrl)
+  }
+
+  async function getImages() {
+    // This should get one type of outfit (once linked to AI)
+
+    var shirt = "black_tshirt.jpeg"
+    var pant = "beige_pants.jpeg"
+  
+    var queryString = shirt + "," + pant
+    // GET request
+    var response = await fetch(
+      "http://127.0.0.1:5000/images?imgs="+queryString
+    )
+
+    if (response.status == 200) {
+      console.log("Get worked")
+    }
+
+    var res = await response.blob() // response needs to be a blob
+
+    // unzip file using JSZip
+    var JSZip = require("jszip");
+
+    const zip = new JSZip();
+    const zipContent = await zip.loadAsync(res); // Load zip file
+    
+    // Extract files (all files are images so no need to filter)
+    const imageFiles = Object.values(zipContent.files);
+    // With filtering (untested):
+    //const imageFiles = Object.values(zipContent.files).filter((file) =>
+    //file.dir ? false : /\.(jpg|jpeg|png|gif)$/i.test(file.name)
+    //);
+
+    // Blob each one to be able to createObjectURL and then display it
+    var i = 0;
+    for (var image of imageFiles) {
+      const blob = await image.async('blob');
+      const imageUrl = URL.createObjectURL(blob);
+      if (i==0) {
+        setFileUrl(imageUrl)
+      } else {
+        setFile2Url(imageUrl)
+      }
+      
+      i = 1
+    }
+
+    console.log(imageFiles)
+    
+    //const imageUrl = URL.createObjectURL(); //generates a temporary url for the selected file
+    //setFileUrl(imageUrl)
   }
 
   // Axios POST (unused)
@@ -100,8 +158,9 @@ function App() {
       </div>
       */}
     <div className="App-header">
-      <h1>ProjectName</h1>
-      <p>Subheading.</p>
+      <h1>ClosetAI</h1>
+      <p>Your personal stylist.</p>
+      <br/>
       <Button variant="outlined">
       <label>
         Upload an Image
@@ -111,14 +170,16 @@ function App() {
       <Button onClick={
         handleSave
       }>Save</Button>
+      <div>{uploadSuccessful && <Checkmark/>}</div>
       <img class="image-preview" src={fileUrl}/>
-
+      <img class="image-preview" src={file2Url}/>
       <Button variant="outlined" onClick={
         getImage
-      }>Outfit Option 1</Button>
+      }>Get one item</Button>
+      <br/>
       <Button variant="outlined" onClick={
-        getImage
-      }>Outfit Option 2</Button>
+        getImages
+      }>Get an outfit</Button>
     </div>
       
     </div>

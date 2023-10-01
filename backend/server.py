@@ -1,4 +1,5 @@
 # Import flask
+from zipfile import ZipFile
 from flask import Flask, request, redirect, render_template, send_file # . .venv/bin/activate to activate virtual environment before running
 from flask_cors import CORS
 import datetime
@@ -56,7 +57,33 @@ def get_image():
     if image_name in stored_images:
         return send_file(f"./photos/{image_name}", mimetype='image/png')
     
-    return 
+    return
+
+@app.route('/images', methods=['GET'])
+def get_images():
+    image_names = request.args.get('imgs')
+    if image_names is None:
+        return
+    
+    stored_images = os.listdir('./photos')
+    image_urls = image_names.split(',') # split urls by comma, assuming ?imgs=url1,url2,url3 etc.
+
+    image_paths = []
+
+    # check if each image url is stored (under photos folder), then 
+    for url in image_urls:
+        if url in stored_images:
+            image_paths.append(url)
+
+    # create a zip file
+    zip_filename = "./zip_files/images.zip"
+    
+    with ZipFile(zip_filename, 'w') as zip_file:
+        for image_path in image_paths:
+            zip_file.write('./photos/'+image_path, os.path.basename(image_path))
+
+    return send_file(zip_filename, as_attachment=True)
+            
 
 # Route for seeing a data
 @app.route('/data')
