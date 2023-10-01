@@ -85,13 +85,13 @@ def get_images():
     return send_file(zip_filename, as_attachment=True)
             
 
-# Route for seeing a data
+# Route for seeing a data (test)
 @app.route('/data')
 def get_time():
  
     # Returning an api for showing in  reactjs
     return {
-        'Name':"geek",
+        'Name':"test",
         "Age":"22",
         "Date":x,
         "programming":"python"
